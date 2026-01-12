@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мои заметки</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 16px;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    input[type="text"] {
+      width: calc(100% - 90px);
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 15px;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      background: white;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .delete-btn {
+      color: red;
+      background: none;
+      border: none;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Мои заметки</h1>
+    <input type="text" id="noteInput" placeholder="Введите заметку...">
+    <button id="addNote">Добавить</button>
+    <ul id="notesList"></ul>
+  </div>
+
+  <!-- Подключаем Telegram SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <script>
+    const noteInput = document.getElementById('noteInput');
+    const addNoteBtn = document.getElementById('addNote');
+    const notesList = document.getElementById('notesList');
+
+    // Загрузка заметок из localStorage
+    function loadNotes() {
+      const notes = JSON.parse(localStorage.getItem('notes') || '[]');
+      renderNotes(notes);
+    }
+
+    // Отображение списка заметок
+    function renderNotes(notes) {
+      notesList.innerHTML = '';
+      notes.forEach((note, index) => {
+        const li = document.createElement('li');
+        li.textContent = note.text;
+        const deleteBtn = document.createElement('button');
+        deleteBtn.classList.add('delete-btn');
+        deleteBtn.innerHTML = '&times;';
+        deleteBtn.onclick = () => removeNote(index);
+        li.appendChild(deleteBtn);
+        notesList.appendChild(li);
+      });
+    }
+
+    // Добавление новой заметки
+    function addNote() {
+      const text = noteInput.value.trim();
+      if (!text) return;
+
+      const notes = JSON.parse(localStorage.getItem('notes') || '[]');
+      notes.push({ text });
+      localStorage.setItem('notes', JSON.stringify(notes));
+
+      noteInput.value = '';
+      loadNotes();
+    }
+
+    // Удаление заметки по индексу
+    function removeNote(index) {
+      const notes = JSON.parse(localStorage.getItem('notes') || '[]');
+      notes.splice(index, 1);
+      localStorage.setItem('notes', JSON.stringify(notes));
+      loadNotes();
+    }
+
+    // Обработка нажатия на кнопку "Добавить"
+    addNoteBtn.onclick = addNote;
+
+    // Нажатие Enter в поле ввода
+    noteInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        addNote();
+      }
+    });
+
+    // Инициализация Telegram WebApp
+    window.Telegram.WebApp.ready();
+    window.Telegram.WebApp.expand(); // раскрыть на весь экран
+
+    // Загрузка заметок при старте
+    loadNotes();
+  </script>
+</body>
+</html>
